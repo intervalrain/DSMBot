@@ -22,9 +22,8 @@ const Chat: React.FC = () => {
     if (input.trim() === '') return;
 
     const newMessage: Message = {
-      id: Date.now().toString(),
       content: input,
-      sender: 'user',
+      role: 'user',
       timestamp: new Date(),
     };
 
@@ -33,28 +32,35 @@ const Chat: React.FC = () => {
 
     const response = await sendMessage(input);
     const botMessage: Message = {
-      id: (Date.now() + 1).toString(),
       content: response,
-      sender: 'assistant',
+      role: 'assistant',
       timestamp: new Date(),
     };
 
     setMessages((prevMessages) => [...prevMessages, botMessage]);
   };
 
+  function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0,
+            v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
   return (
     <div className="flex flex-col h-screen">
       <ScrollArea className="flex-grow p-4">
         {messages.map((message) => (
           <div
-            key={message.id}
+            key={generateUUID()}
             className={`mb-4 ${
-              message.sender === 'user' ? 'text-right' : 'text-left'
+              message.role === 'user' ? 'text-right' : 'text-left'
             }`}
           >
             <div
               className={`inline-block p-2 rounded-lg ${
-                message.sender === 'user'
+                message.role === 'user'
                   ? 'bg-blue-500 text-white'
                   : 'bg-gray-200 text-gray-800'
               }`}

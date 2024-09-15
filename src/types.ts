@@ -1,7 +1,6 @@
 export interface Message {
-  id: string;
   content: string;
-  sender: "user" | "assistant";
+  role: "user" | "assistant";
   timestamp: Date;
 }
 

@@ -1,6 +1,6 @@
 import { Message } from './types';
 import { BASE_URL } from './config';
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosProgressEvent } from 'axios';
 
 const api: AxiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -44,11 +44,61 @@ export const authenticate = async ():Promise<TokenResponse> => {
   }
 };
 
+export const chatCompletion = async (messages: Message[], onChunk: (chunk: string) => void) => {
+  let streamedText = '';
+  const token = localStorage.getItem('token');
+  
+  try {
+    await api.post('/ChatBot/completions', {
+      model: 'gpt-3.5-turbo',
+      messages,
+      stream: true
+    }, {
+      responseType: 'text',
+      headers: {
+        'Accept': 'text/event-stream',
+      },
+      onDownloadProgress: (progressEvent: AxiosProgressEvent) => {
+        const data = progressEvent.event?.target as XMLHttpRequest;
+        if (data?.responseText) {
+          const newText = data.responseText.slice(streamedText.length);
+          streamedText = data.responseText;
+          
+          const lines = newText.split('\n');
+          const parsedLines = lines
+            .map(line => line.replace(/^data: /, '').trim())
+            .filter(line => line !== '' && line !== '[DONE]')
+            .map(line => {
+              try {
+                return JSON.parse(line);
+              } catch (e) {
+                console.error('Error parsing line:', line);
+                return null;
+              }
+            })
+            .filter((line): line is NonNullable<typeof line> => line !== null);
+
+          for (const parsed of parsedLines) {
+            if (parsed.choices && parsed.choices[0] && parsed.choices[0].delta) {
+              const content = parsed.choices[0].delta.content || '';
+              if (content) {
+                onChunk(content);
+              }
+            }
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error in chatCompletion:', error);
+    throw error;
+  }
+};
+
 const mockMessages: Message[] = [
   {
-    id: '1',
     content: 'Hello! How can I help you today?',
-    sender: 'assistant',
+    role: 'assistant',
     timestamp: new Date(Date.now() - 1000 * 60 * 5), // 5 minutes ago
   },
 ];
