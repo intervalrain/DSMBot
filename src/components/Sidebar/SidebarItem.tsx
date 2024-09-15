@@ -2,21 +2,24 @@ import React, { useContext } from "react";
 import { useSidebar } from "./SidebarContext";
 
 interface SidebarItemProps {
-  icon: React.CElement<any, any>;
+  icon: React.ReactNode;
   text: string;
   active?: boolean;
   alert?: boolean;
+  onClick: () => void;
 }
 
 const SidebarItem: React.FC<SidebarItemProps> = ({
   icon,
   text,
-  active,
-  alert,
+  active = false,
+  alert = false,
+  onClick,
 }) => {
   const { expanded } = useSidebar();
   return (
     <li
+      onClick={onClick}
       className={`relative flex items-center py-2 px-3 my-1 font-medium rounded-md cursor-pointer transition-colors group ${
         active
           ? "bg-gradient-to-tr from-indigo-200 to-indigo-100 text-indigo-800"
