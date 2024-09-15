@@ -1,4 +1,4 @@
-import React, { act, useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Sidebar from "./components/Sidebar/Sidebar";
 import {
   MessageSquare,
@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import SidebarItem from "./components/Sidebar/SidebarItem";
 import { checkForUnreadNews } from "./api";
-import { AppProvider, PageType, useAppContext } from "./AppContext";
+import { PageType, useAppContext } from "./AppContext";
 
 import ChatPage from "./components/Chat/ChatPage";
 import AssistantPage from "./components/Assistant/AssistantPage";
@@ -27,7 +27,7 @@ import HelpPage from "./components/Help/HelpPage";
 import IssuePage from "./components/Issue/IssuePage";
 import NewsPage from "./components/News/NewsPage";
 
-const AppContent: React.FC = () => {
+const App: React.FC = () => {
   const {
     activePage,
     setActivePage,
@@ -35,6 +35,8 @@ const AppContent: React.FC = () => {
     setHasUnreadNews,
     darkMode,
     user,
+    isLoading,
+    isAuthenticated,
   } = useAppContext();
 
   useEffect(() => {
@@ -97,6 +99,14 @@ const AppContent: React.FC = () => {
     { icon: <Newspaper size={20} />, text: "News", page: "news" },
   ];
 
+  if (isLoading) {
+    return <div className='flex text-2xl text-black items-center justify-center h-screen w-screen bg-white'>Authenticating...</div>;
+  }
+
+  if (!isAuthenticated) {
+    return <div className='flex text-2xl text-red-500 items-center justify-center h-screen w-screen bg-white'>Unauthorized to access page.</div>;
+  }
+
   return (
     <main className={`flex h-screen ${darkMode ? "dark" : ""}`}>
       <Sidebar user={user}>
@@ -113,14 +123,6 @@ const AppContent: React.FC = () => {
       </Sidebar>
       <div className="flex-grow">{renderPage()}</div>
     </main>
-  );
-};
-
-const App: React.FC = () => {
-  return (
-    <AppProvider>
-      <AppContent />
-    </AppProvider>
   );
 };
 

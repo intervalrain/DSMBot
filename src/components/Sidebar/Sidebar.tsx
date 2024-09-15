@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import { User } from "../../types"
+import { User } from "../../types";
 import { ChevronFirst, ChevronLast, MoreVertical } from "lucide-react";
 import { SidebarProvider, useSidebar } from "./SidebarContext";
 import { useAppContext } from "../../AppContext";
@@ -22,6 +22,14 @@ interface SidebarProps {
 const SidebarContent: React.FC<SidebarProps> = ({ children, user }) => {
   const { expanded, setExpanded } = useSidebar();
   const { activePage, setActivePage, darkMode, setDarkMode } = useAppContext();
+
+  if (user === null) {
+    return (
+      <div className="flex text-2xl text-red-500 items-center justify-center h-screen w-screen bg-white">
+        Unauthorized to access page.
+      </div>
+    );
+  }
 
   return (
     <aside className="h-screen">
@@ -46,8 +54,7 @@ const SidebarContent: React.FC<SidebarProps> = ({ children, user }) => {
         <ul className="flex-1 px-3">{children}</ul>
 
         <div className="border-t flex p-3">
-          <Avatar name={user.name} className="w-10 h-10" />
-          {/* <img src="./profile.png" alt="" className="w-10 h-10 rounded-md" /> */}
+          <Avatar name={user.name as string} className="w-10 h-10" />
           <div
             className={`flex justify-between items-center overflow-hidden transition-all ${
               expanded ? "w-52 ml-3" : "w-0"
@@ -55,9 +62,7 @@ const SidebarContent: React.FC<SidebarProps> = ({ children, user }) => {
           >
             <div className="leading-4">
               <h4 className="font-semibold">{user.name}</h4>
-              <span className="text-xs text-gray-600">
-                {user.email}
-              </span>
+              <span className="text-xs text-gray-600">{user.email}</span>
             </div>
             <div className="mr-2">
               <DropdownMenu>
@@ -67,15 +72,22 @@ const SidebarContent: React.FC<SidebarProps> = ({ children, user }) => {
                 <DropdownMenuContent>
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup value={darkMode ? 'dark' : 'light'} onValueChange={(value: string) => {
-                    if (value === 'dark' && !darkMode) {
-                      setDarkMode(true);
-                    } else if (value === 'light' && darkMode) {
-                      setDarkMode(false);
-                    }
-                  }}>
-                    <DropdownMenuRadioItem value="light">Dark Mode</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="dark">Light Mode</DropdownMenuRadioItem>
+                  <DropdownMenuRadioGroup
+                    value={darkMode ? "dark" : "light"}
+                    onValueChange={(value: string) => {
+                      if (value === "dark" && !darkMode) {
+                        setDarkMode(true);
+                      } else if (value === "light" && darkMode) {
+                        setDarkMode(false);
+                      }
+                    }}
+                  >
+                    <DropdownMenuRadioItem value="light">
+                      Dark Mode
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="dark">
+                      Light Mode
+                    </DropdownMenuRadioItem>
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
