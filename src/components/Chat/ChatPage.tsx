@@ -6,7 +6,7 @@ import { ScrollArea } from '../ui/scroll-area';
 import { fetchChatMessages, sendMessage } from '../../api';
 import { Message } from '../../types';
 
-const Chat: React.FC = () => {
+const ChatPage: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
 
@@ -90,4 +90,4 @@ const Chat: React.FC = () => {
   );
 };
 
-export default Chat;
+export default ChatPage;
