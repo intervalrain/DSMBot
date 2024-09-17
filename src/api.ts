@@ -1,4 +1,4 @@
-import { Message } from './types';
+import { DocumentResponse, DSM, Message } from './types';
 import { BASE_URL } from './config';
 import axios, { AxiosInstance, AxiosProgressEvent } from 'axios';
 
@@ -43,6 +43,27 @@ export const authenticate = async ():Promise<TokenResponse> => {
     throw error;
   }
 };
+
+export const getDocuments = async(): Promise<DSM[]> => {
+  try {
+    const response = await api.get<DocumentResponse>('/Document/getDocuments');
+    console.log(response.data);
+    return response.data.documents.map((doc) => {
+      return {
+        id: doc.id,
+        name: doc.name,
+        category: doc.category,
+        technology: doc.technology,
+        generation: doc.generation,
+        function: doc.platform,
+      };
+    });
+  }
+  catch (error) {
+    console.error('Error fetching documents:', error);
+    throw error;
+  }
+}
 
 export const chatCompletion = async (messages: Message[], onChunk: (chunk: string) => void) => {
   let streamedText = '';

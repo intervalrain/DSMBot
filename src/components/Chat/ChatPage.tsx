@@ -1,14 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Send } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Send, Copy, ArrowDownToLine } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
 import { ScrollArea } from '../ui/scroll-area';
 import { fetchChatMessages, sendMessage } from '../../api';
 import { Message } from '../../types';
+import { Textarea } from '../ui/textarea';
+import 'katex/dist/katex.min.css';
 
 const ChatPage: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+  const [rows, setRows] = useState(1);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const lastMessageRef = useRef<string>('');
 
   useEffect(() => {
     const loadMessages = async () => {
@@ -17,6 +21,12 @@ const ChatPage: React.FC = () => {
     };
     loadMessages();
   }, []);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      lastMessageRef.current = messages[messages.length - 1].content;
+    }
+  }, [messages]);
 
   const handleSend = async () => {
     if (input.trim() === '') return;
@@ -29,6 +39,7 @@ const ChatPage: React.FC = () => {
 
     setMessages([...messages, newMessage]);
     setInput('');
+    setRows(1);
 
     const response = await sendMessage(input);
     const botMessage: Message = {
@@ -38,6 +49,36 @@ const ChatPage: React.FC = () => {
     };
 
     setMessages((prevMessages) => [...prevMessages, botMessage]);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+    const lineCount = e.target.value.split('\n').length;
+    setRows(Math.min(lineCount, 5));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter') {
+      if (e.shiftKey) {
+        // Allow line break
+        return;
+      } else {
+        e.preventDefault();
+        handleSend();
+      }
+    } else if (e.key === 'ArrowUp' && input === '') {
+      e.preventDefault();
+      setInput(lastMessageRef.current);
+    }
+  };
+
+  const copyMessage = (content: string) => {
+    navigator.clipboard.writeText(content);
+  };
+
+  const insertMessage = (content: string) => {
+    setInput(content);
+    inputRef.current?.focus();
   };
 
   function generateUUID() {
@@ -67,19 +108,39 @@ const ChatPage: React.FC = () => {
             >
               {message.content}
             </div>
-            <div className="text-xs text-gray-500 mt-1">
-              {message.timestamp.toLocaleTimeString()}
+            <div className={`text-xs text-gray-500 mt-1 flex items-center
+              ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <span>{message.timestamp.toLocaleTimeString()}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => copyMessage(message.content)}
+                className="ml-2"
+              >
+                <Copy size={16} />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => insertMessage(message.content)}
+                className="ml-2"
+              >
+                <ArrowDownToLine size={16} />
+              </Button>
             </div>
           </div>
         ))}
       </ScrollArea>
       <div className="p-4 border-t">
         <div className="flex space-x-2">
-          <Input
+          <Textarea
+            ref={inputRef}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             placeholder="Type your message..."
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            rows={rows}
+            className="resize-none"
           />
           <Button onClick={handleSend}>
             <Send size={20} />

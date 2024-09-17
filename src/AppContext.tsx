@@ -1,12 +1,7 @@
-import React, {
-  createContext,
-  useState,
-  useContext,
-  ReactNode,
-  useEffect,
-} from "react";
-import { User } from "./types";
+import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
+import { AppSettings, User, UserConfig } from "./types";
 import { authenticate, TokenResponse } from "./api";
+import Cookies from "js-cookie";
 
 export type PageType =
   | "chat"
@@ -20,10 +15,13 @@ export type PageType =
   | "issue"
   | "news";
 
-interface UserConfig {
-  language: string;
-  notificationsEnabled: boolean;
-}
+const initialSettings: AppSettings = {
+  temperature: 0.7,
+  model: "gpt-4o-for-text",
+  language: "system",
+  historyDays: 30,
+  theme: "system",
+};
 
 interface AppContextType {
   activePage: PageType;
@@ -38,13 +36,16 @@ interface AppContextType {
   setUser: (user: User) => void;
   isAuthenticated: boolean;
   isLoading: boolean;
+  settings: AppSettings;
+  setSettings: (settings: AppSettings) => void;
+  hasChanges: boolean;
+  setHasChanges: (value: boolean) => void;
+  saveSettings: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-export const AppProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
+export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [activePage, setActivePage] = useState<PageType>("chat");
   const [hasUnreadNews, setHasUnreadNews] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
@@ -59,6 +60,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   });
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [settings, setSettings] = useState<AppSettings>(() => {
+    const savedSettings = Cookies.get('appSettings');
+    return savedSettings ? JSON.parse(savedSettings) : initialSettings;
+  });
+  const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
     const checkAuthentication = async () => {
@@ -80,7 +86,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
       try {
         setIsLoading(true);
         const tokenResponse: TokenResponse = await authenticate();
-        setUser({ userId: tokenResponse.userId, name: tokenResponse.userName, email: tokenResponse.email });
+        setUser({
+          userId: tokenResponse.userId,
+          name: tokenResponse.userName,
+          email: tokenResponse.email,
+        });
         setIsAuthenticated(true);
       } catch (error) {
         console.error("An error occurred during authentication:", error);
@@ -92,6 +102,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
 
     checkAuthentication();
   }, []);
+
+  const saveSettings = () => {
+    Cookies.set('appSettings', JSON.stringify(settings), { expires: 365 });
+    setHasChanges(false);
+  };
 
   return (
     <AppContext.Provider
@@ -108,6 +123,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         setUser,
         isAuthenticated,
         isLoading,
+        settings,
+        setSettings,
+        hasChanges,
+        setHasChanges,
+        saveSettings,
       }}
     >
       {children}

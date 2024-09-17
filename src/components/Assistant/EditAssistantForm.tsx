@@ -2,11 +2,9 @@ import React, { useState } from "react";
 import { Assistant } from "./types";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
-import { Slider } from "@radix-ui/react-slider";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
-import { cn } from "../../lib/utils";
-import NumberInput from "./NumberInput";
+import { NumberInput } from "../ui/number-input";
 
 interface EditAssistantFormProps {
   assistant: Assistant;

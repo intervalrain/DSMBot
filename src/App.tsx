@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from "./components/Sidebar/Sidebar";
 import {
   MessageSquare,
@@ -37,7 +37,9 @@ const App: React.FC = () => {
     user,
     isLoading,
     isAuthenticated,
+    
   } = useAppContext();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
     const checkNews = async () => {
@@ -90,12 +92,12 @@ const App: React.FC = () => {
     { icon: <MessageSquare size={20} />, text: "Chat", page: "chat" },
     { icon: <Bot size={20} />, text: "Assistant", page: "assistant" },
     { icon: <FileText size={20} />, text: "Document", page: "document" },
-    { icon: <SquareLibrary size={20} />, text: "Library", page: "library" },
+    // { icon: <SquareLibrary size={20} />, text: "Library", page: "library" },
     // { icon: <Search size={20} />, text: "Search", page: "search" },
-    { icon: <History size={20} />, text: "History", page: "history" },
+    // { icon: <History size={20} />, text: "History", page: "history" },
     { icon: <Settings size={20} />, text: "Settings", page: "settings" },
-    { icon: <HelpCircle size={20} />, text: "Help", page: "help" },
-    { icon: <Bug size={20} />, text: "Issue", page: "issue" },
+    // { icon: <HelpCircle size={20} />, text: "Help", page: "help" },
+    // { icon: <Bug size={20} />, text: "Issue", page: "issue" },
     { icon: <Newspaper size={20} />, text: "News", page: "news" },
   ];
 
